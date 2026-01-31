@@ -2,6 +2,20 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { LessonPlan, MindMapData, MindMapMode, PresentationScript, ContentResult, CharacterProfile, ImageRatio, SpeechEvaluation, CEFRLevel } from "../types";
 
+// Hàm helper để lấy API Key từ localStorage hoặc môi trường
+const getApiKey = () => {
+  return localStorage.getItem('MRS_DUNG_GEMINI_KEY') || process.env.API_KEY || "";
+};
+
+// Khởi tạo AI Instance động để luôn lấy key mới nhất
+const getAI = () => {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("Vui lòng cài đặt API Key trong phần Settings để sử dụng app con nhé!");
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
 // Quản lý hàng đợi âm thanh để đọc lần lượt, tuyệt đối không chồng chéo
 let audioQueue: string[] = [];
 let isProcessingQueue = false;
@@ -42,7 +56,7 @@ export const fileToBase64 = (file: File): Promise<string> => {
 
 const executeTTS = async (text: string): Promise<void> => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text }] }],
@@ -98,7 +112,7 @@ export const playGeminiTTS = async (text: string): Promise<void> => {
 export const generateAudioFromContent = async (text: string): Promise<string | null> => {
   if (!text) return null;
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text }] }],
@@ -114,7 +128,7 @@ export const generateAudioFromContent = async (text: string): Promise<string | n
 };
 
 export const generateLessonPlan = async (topicInput?: string, textInput?: string, images: string[] = [], level: CEFRLevel = 'Starter (A1)'): Promise<LessonPlan> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const imageParts = images.map(data => ({ inlineData: { data, mimeType: 'image/jpeg' } }));
   
   const systemInstruction = `BẠN LÀ MRS. DUNG AI - CHUYÊN GIA KHẢO THÍ VÀ BIÊN SOẠN GIÁO TRÌNH TIẾNG ANH CHUẨN QUỐC TẾ.
@@ -235,7 +249,7 @@ const lessonSchema = {
 };
 
 export const analyzeImageAndCreateContent = async (images: string[], mimeType: string, char: CharacterProfile, mode: string, customPrompt?: string, topic?: string, text?: string): Promise<ContentResult> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const imageParts = images.map(data => ({ inlineData: { data, mimeType } }));
   const systemInstruction = `BẠN LÀ MRS. DUNG. Tạo câu chuyện phép thuật cho bé. Trả về JSON.`;
   const response = await ai.models.generateContent({
@@ -262,7 +276,7 @@ const contentResultSchema = {
 };
 
 export const generateStoryImage = async (prompt: string, style: string, ratio: ImageRatio): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
     contents: { parts: [{ text: `${prompt}. Style: ${style}` }] },
@@ -273,7 +287,7 @@ export const generateStoryImage = async (prompt: string, style: string, ratio: I
 };
 
 export const generateMindMap = async (content: any, mode: MindMapMode): Promise<MindMapData> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: `Tạo sơ đồ tư duy JSON: ${JSON.stringify(content)}.`,
@@ -291,7 +305,7 @@ const mindMapSchema = {
 };
 
 export const correctWriting = async (userText: string, creativePrompt: string): Promise<any> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: `Chấm bài viết: "${userText}".`,
@@ -313,7 +327,7 @@ const writingCorrectionSchema = {
 };
 
 export const evaluateSpeech = async (base64Audio: string): Promise<SpeechEvaluation> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: { parts: [{ inlineData: { data: base64Audio, mimeType: 'audio/wav' } }, { text: "Chấm điểm phát âm." }] },
@@ -332,7 +346,7 @@ const speechEvaluationSchema = {
 };
 
 export const generatePresentation = async (data: MindMapData): Promise<PresentationScript> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: `Soạn kịch bản thuyết trình: ${JSON.stringify(data)}.`,
@@ -351,7 +365,7 @@ const presentationSchema = {
 };
 
 export const generateMindMapPrompt = async (content: any, mode: MindMapMode): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = getAI();
   const response = await ai.models.generateContent({ 
     model: 'gemini-3-pro-preview', 
     contents: `Tạo Midjourney prompt cho: ${JSON.stringify(content)}.`,

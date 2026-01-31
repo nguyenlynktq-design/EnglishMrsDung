@@ -7,19 +7,6 @@ import { MegaChallenge } from './components/MegaChallenge';
 import { UploadZone } from './components/UploadZone';
 import { LessonCertificate } from './components/LessonCertificate';
 
-declare global {
-  // Fix: Defining the AIStudio interface and augmenting it to match environment expectations.
-  interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-  }
-
-  interface Window {
-    // Fix: Redefining window.aistudio as readonly to match the existing declaration in the environment.
-    readonly aistudio: AIStudio;
-  }
-}
-
 const MrsDungLogo = ({ className = "w-16 h-16", color = "currentColor" }) => (
   <div className={`relative ${className} flex items-center justify-center`}>
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
@@ -53,26 +40,24 @@ function App() {
   const [studentName, setStudentName] = useState('');
   const [megaScores, setMegaScores] = useState({ mc: 0, scramble: 0, fill: 0, error: 0, listening: 0, match: 0 });
   const [showCertificate, setShowCertificate] = useState(false);
-  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  
+  // API Key State
+  const [apiKey, setApiKey] = useState(localStorage.getItem('MRS_DUNG_GEMINI_KEY') || '');
+  const [showKeyModal, setShowKeyModal] = useState(false);
 
   useEffect(() => {
-    checkApiKey();
-  }, []);
-
-  const checkApiKey = async () => {
-    if (window.aistudio) {
-      const selected = await window.aistudio.hasSelectedApiKey();
-      setHasKey(selected);
-    } else {
-      setHasKey(true); // Fallback for local/other environments
+    // Nếu chưa có key thì bắt buộc hiện modal
+    if (!apiKey) {
+      setShowKeyModal(true);
     }
-  };
+  }, [apiKey]);
 
-  const handleOpenKeySelection = async () => {
-    if (window.aistudio) {
-      await window.aistudio.openSelectKey();
-      setHasKey(true);
-    }
+  const saveApiKey = (key: string) => {
+    const cleanKey = key.trim();
+    localStorage.setItem('MRS_DUNG_GEMINI_KEY', cleanKey);
+    setApiKey(cleanKey);
+    setShowKeyModal(false);
+    window.location.reload(); // Reload để khởi tạo lại AI instance với key mới
   };
 
   const resetApp = () => {
@@ -105,10 +90,7 @@ function App() {
   };
 
   const handleGenerate = async () => {
-    if (hasKey === false) {
-      handleOpenKeySelection();
-      return;
-    }
+    if (!apiKey) { setShowKeyModal(true); return; }
     if (plannerMode === 'topic' && !topic.trim()) { setError("Hãy nhập chủ đề bài học con nhé!"); return; }
     if (plannerMode === 'text' && !lessonText.trim()) { setError("Hãy dán nội dung bài học vào đây!"); return; }
     if (plannerMode === 'image' && selectedFiles.length === 0) { setError("Hãy chọn ít nhất một tấm ảnh tài liệu!"); return; }
@@ -127,12 +109,7 @@ function App() {
       setLesson(data);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) { 
-        if (err.message && err.message.includes("entity was not found")) {
-          setHasKey(false);
-          setError("Lỗi xác thực API Key. Hãy nhấn nút 'Cài đặt API Key' để chọn lại dự án có tính phí!");
-        } else {
-          setError(err.message || "Lỗi khi soạn bài, con hãy thử lại nhé!"); 
-        }
+        setError(err.message || "Lỗi khi soạn bài, con hãy thử lại nhé!"); 
     } finally { setLoading(false); }
   };
 
@@ -141,25 +118,30 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brand-50 flex flex-col font-serif text-slate-900 overflow-x-hidden">
-      <div className="bg-brand-900 text-white py-3 px-4 md:px-6 flex justify-between items-center text-[10px] md:text-sm font-black uppercase tracking-widest border-b-2 border-highlight-400 sticky top-0 z-[100] shadow-xl">
-        <div className="flex gap-4 md:gap-8 overflow-x-auto scrollbar-hide">
-          <a href="https://ai.studio/apps/drive/16nC5BYZ93wiF2mRZdrfeIVuG_sR7VxM1?fullscreenApplet=true" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-highlight-300 transition-all hover:scale-105 active:scale-95 group shrink-0">
-            <span className="text-xl group-hover:rotate-12 transition-transform">✨</span> Magic story
+      {/* Header Bar */}
+      <div className="bg-brand-900 text-white py-2 px-4 md:px-6 flex justify-between items-center text-[10px] md:text-sm font-black uppercase tracking-widest border-b-2 border-highlight-400 sticky top-0 z-[100] shadow-xl">
+        <div className="flex gap-4 md:gap-10 overflow-x-auto scrollbar-hide shrink-0">
+          <a href="https://ai.studio/apps/drive/16nC5BYZ93wiF2mRZdrfeIVuG_sR7VxM1?fullscreenApplet=true" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-highlight-300 transition-all hover:scale-105 group">
+            <span className="text-lg md:text-xl group-hover:rotate-12 transition-transform">✨</span> Magic story
           </a>
-          <a href="https://www.tienganhchotreem.com/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-highlight-300 transition-all hover:scale-105 active:scale-95 group shrink-0">
-            <span className="text-xl group-hover:rotate-12 transition-transform">📚</span> Bộ truyện hay
+          <a href="https://www.tienganhchotreem.com/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-highlight-300 transition-all hover:scale-105 group">
+            <span className="text-lg md:text-xl group-hover:rotate-12 transition-transform">📚</span> Bộ truyện hay
           </a>
         </div>
         
-        <button 
-          onClick={handleOpenKeySelection}
-          className={`flex items-center gap-2 px-4 py-1.5 rounded-full transition-all border-2 ${hasKey ? 'bg-brand-600 border-brand-400 text-white' : 'bg-red-500 border-white text-white animate-pulse'}`}
-        >
-          <span>🔑</span> {hasKey ? 'API Key: OK' : 'Cài đặt API Key'}
-        </button>
+        {/* API Key Settings Button - ALWAYS VISIBLE */}
+        <div className="flex items-center gap-2 shrink-0">
+           <span className="hidden md:inline text-red-500 font-bold text-[11px] animate-pulse">Lấy API key để sử dụng app ➜</span>
+           <button 
+             onClick={() => setShowKeyModal(true)} 
+             className={`flex items-center gap-1 md:gap-2 px-3 md:px-5 py-1.5 rounded-full font-black text-[10px] md:text-xs transition-all border-2 shadow-lg ${apiKey ? 'bg-brand-700 border-brand-500 text-brand-100' : 'bg-red-600 border-white text-white animate-bounce'}`}
+           >
+             <span>⚙️</span> SETTINGS (API KEY)
+           </button>
+        </div>
       </div>
 
-      <header className="bg-brand-700 border-b-4 md:border-b-8 border-brand-800 sticky top-[48px] md:top-[52px] z-50 shadow-2xl">
+      <header className="bg-brand-700 border-b-4 md:border-b-8 border-brand-800 sticky top-[40px] md:top-[44px] z-50 shadow-2xl">
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 h-20 md:h-28 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-6 cursor-pointer" onClick={resetApp}>
             <MrsDungLogo className="w-12 h-12 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl p-1 md:p-2 shadow-2xl" color="#16a34a" />
@@ -171,26 +153,65 @@ function App() {
         </div>
       </header>
 
+      {/* API Key Mandatory Modal */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-[200] bg-brand-900/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-[2.5rem] p-8 md:p-12 max-w-lg w-full shadow-2xl border-[10px] border-brand-100 ring-4 ring-white animate-bounce-in">
+             <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-brand-50 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 border-2 border-brand-200">🔑</div>
+                <h3 className="text-2xl md:text-3xl font-black text-brand-800 uppercase tracking-tighter mb-2">Cài đặt Gemini API Key</h3>
+                <p className="text-slate-500 font-bold leading-relaxed">Để Mrs. Dung có thể soạn bài, con hãy nhập mã API Key của mình vào đây nhé!</p>
+             </div>
+             
+             <div className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100">
+                   <p className="text-blue-700 text-sm font-bold flex items-start gap-2">
+                     <span>ℹ️</span>
+                     <span>Con vào trang <b><a href="https://aistudio.google.com/api-keys" target="_blank" className="underline text-blue-800">Google AI Studio</a></b> để lấy mã Key miễn phí nhé!</span>
+                   </p>
+                </div>
+                
+                <div className="space-y-2">
+                   <label className="text-xs font-black text-brand-700 uppercase tracking-widest pl-2">Mã API Key của con:</label>
+                   <input 
+                      type="password" 
+                      defaultValue={apiKey}
+                      placeholder="Dán mã API Key tại đây..." 
+                      className="w-full p-4 rounded-2xl border-4 border-brand-50 bg-brand-50/50 font-mono text-sm focus:border-brand-500 outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveApiKey((e.target as HTMLInputElement).value);
+                      }}
+                      id="key-input"
+                   />
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                   <button 
+                     onClick={() => setShowKeyModal(false)}
+                     className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-sm uppercase hover:bg-slate-200"
+                   >
+                     Đóng
+                   </button>
+                   <button 
+                     onClick={() => {
+                        const val = (document.getElementById('key-input') as HTMLInputElement).value;
+                        saveApiKey(val);
+                     }}
+                     className="flex-[2] py-4 bg-brand-500 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-brand-600 transition-all border-b-8 border-brand-700 active:border-b-0 uppercase"
+                   >
+                     🚀 Lưu & Bắt đầu
+                   </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-[1800px] mx-auto px-4 md:px-6 py-8 md:py-16 flex-grow w-full relative">
         <div className="space-y-12 md:space-y-24">
            {!lesson ? (
              <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] shadow-2xl border-b-[10px] md:border-b-[20px] border-r-[10px] md:border-r-[20px] border-brand-100 p-6 md:p-24 max-w-5xl mx-auto animate-fade-in text-center relative overflow-hidden ring-4 md:ring-8 ring-white">
                 <div className="absolute top-0 left-0 w-full h-2 md:h-4 bg-brand-500"></div>
-                
-                {hasKey === false && (
-                  <div className="mb-8 p-6 bg-red-50 border-4 border-red-200 rounded-3xl animate-bounce-in shadow-xl">
-                    <h3 className="text-red-600 font-black text-xl md:text-3xl mb-2 uppercase">⚠️ Cần xác thực API Key</h3>
-                    <p className="text-red-500 font-bold mb-6 text-sm md:text-lg">Bé cần chọn API Key từ một dự án Google Cloud có tính phí để Mrs. Dung có thể soạn bài nhé!</p>
-                    <button 
-                      onClick={handleOpenKeySelection}
-                      className="bg-red-500 text-white px-8 py-3 rounded-2xl font-black text-xl shadow-lg border-b-4 border-red-700 active:border-b-0 hover:bg-red-400"
-                    >
-                      🚀 CHỌN KEY NGAY
-                    </button>
-                    <p className="mt-4 text-xs font-bold text-red-400">Xem hướng dẫn thanh toán tại: <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="underline">ai.google.dev/billing</a></p>
-                  </div>
-                )}
-
                 <MrsDungLogo className="w-32 h-32 md:w-56 md:h-56 mx-auto mb-6 md:mb-12 drop-shadow-2xl" color="#15803d" />
                 <h2 className="text-2xl md:text-5xl font-black text-brand-800 mb-2 md:mb-4 uppercase tracking-tighter font-display">Chuyên gia soạn thảo giáo án Mrs. Dung</h2>
                 
@@ -229,6 +250,7 @@ function App() {
              </div>
            ) : (
              <div className="space-y-12 md:space-y-24 animate-fade-in max-w-full">
+                {/* Phần hiển thị bài học - đã có trong App.tsx hiện tại */}
                 <div className="text-center relative py-8 md:py-12 bg-white rounded-3xl md:rounded-[5rem] shadow-2xl border-2 md:border-4 border-brand-50 ring-4 md:ring-8 ring-white overflow-hidden px-4">
                    <div className="md:absolute md:top-4 md:right-10 inline-block mb-4 md:mb-0 bg-brand-100 text-brand-700 px-4 py-1.5 rounded-full font-black text-[10px] md:text-sm uppercase tracking-widest border-2 border-brand-200">{cefrLevel}</div>
                    <h1 className="text-3xl md:text-8xl font-black text-brand-800 uppercase font-display mb-4 md:mb-8 leading-tight">{lesson.topic}</h1>
