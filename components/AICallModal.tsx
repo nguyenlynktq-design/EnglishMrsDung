@@ -182,7 +182,7 @@ export const AICallModal: React.FC<AICallModalProps> = ({ isOpen, onClose, story
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
           systemInstruction: `You are Mrs. Dung, a polyglot English teacher at "ENGLISH MRS. DUNG". 
           
           CAPABILITIES:

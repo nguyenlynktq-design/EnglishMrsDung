@@ -1,5 +1,5 @@
 
-export type CEFRLevel = 'Starter (A1)' | 'Elementary (A2)' | 'Intermediate (B1)';
+export type QuizDifficulty = 'Easy' | 'Medium' | 'Hard';
 
 export interface VocabularyItem {
   word: string;
@@ -17,12 +17,26 @@ export interface GrammarSection {
   examples: string[];
 }
 
+export interface ListeningQ {
+  id: string;
+  audioText: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
 export interface MultipleChoiceQ {
   id: string;
   question: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
+}
+
+export interface SpeakingQ {
+  id: string;
+  question: string;
+  suggestedAnswer: string;
 }
 
 export interface ScrambleQ {
@@ -32,39 +46,42 @@ export interface ScrambleQ {
   translation: string;
 }
 
-export interface FillBlankQuestion {
+export interface FillInputQ {
   id: string;
   question: string;
   correctAnswer: string;
+  alternativeAnswers?: string[];  // Alternative correct answers (e.g., ["though"] when correctAnswer is "although")
   clueEmoji: string;
   explanation?: string;
-  options?: string[];
 }
-
-// Alias for FillBlankQuestion used in some components
-export type FillInputQ = FillBlankQuestion;
 
 export interface ErrorIdQ {
   id: string;
   sentence: string;
-  options: string[]; 
+  options: string[];
   correctOptionIndex: number;
   explanation: string;
 }
 
-export interface MatchingPair {
+export interface VocabTranslationQ {
   id: string;
-  left: string; 
-  right: string; 
+  word: string;           // English word
+  options: string[];      // 4 Vietnamese meaning options
+  correctAnswer: number;  // Index of correct option (0-3)
+  explanation?: string;
 }
 
-export interface ListeningQ {
+export interface TrueFalseQ {
   id: string;
-  question: string;
-  audioText: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
+  statement: string;      // Statement about the passage
+  isTrue: boolean;        // True or False
+  explanation: string;    // Vietnamese explanation
+}
+
+export interface MatchingPair {
+  id: string;
+  left: string;
+  right: string;
 }
 
 export interface ReadingAdventure {
@@ -74,20 +91,23 @@ export interface ReadingAdventure {
   comprehension: MultipleChoiceQ[];
 }
 
-export interface SpeakingQ {
-  id: string;
-  question: string;
-  suggestedAnswer: string;
+export interface HomeworkTask {
+  title: string;
+  description: string;
+  instructions: string;
 }
 
 export interface PracticeContent {
+  listening: ListeningQ[];
   megaTest: {
-    multipleChoice: MultipleChoiceQ[]; 
-    scramble: ScrambleQ[]; 
-    fillBlank: FillBlankQuestion[]; 
-    errorId: ErrorIdQ[]; 
-    listening: ListeningQ[];
-    matching: MatchingPair[]; 
+    multipleChoice: MultipleChoiceQ[];
+    scramble: ScrambleQ[];
+    fillBlank: FillInputQ[];
+    errorId: ErrorIdQ[];             // deprecated, kept for backward compat
+    vocabTranslation: VocabTranslationQ[]; // NEW: 10 vocab questions
+    trueFalse: TrueFalseQ[];               // NEW: 10 true/false questions
+    trueFalsePassage?: string;             // Fixed reading passage for True/False questions
+    matching: MatchingPair[];
   };
 }
 
@@ -96,15 +116,21 @@ export interface LessonPlan {
   vocabulary: VocabularyItem[];
   grammar: GrammarSection;
   reading: ReadingAdventure;
+  homework: HomeworkTask;
   practice: PracticeContent;
   teacherTips: string;
+}
+
+export enum AppMode {
+  ANALYSIS = 'analysis',
+  CREATIVE = 'creative'
 }
 
 export interface MindMapData {
   center: {
     title_en: string;
     title_vi: string;
-    emoji?: string; 
+    emoji?: string;
   };
   nodes: Array<{
     text_en: string;
@@ -120,9 +146,11 @@ export enum MindMapMode {
   IMAGE = 'IMAGE'
 }
 
-export enum AppMode {
-  CREATIVE = 'CREATIVE',
-  LEARNING = 'LEARNING'
+export interface FillBlankQuestion {
+  sentence: string;
+  answer: string;
+  options: string[];
+  explanation?: string;
 }
 
 export interface ContentResult {
@@ -143,7 +171,9 @@ export interface PresentationScript {
 }
 
 export interface SpeechEvaluation {
-  scores: { pronunciation: number };
+  scores: {
+    pronunciation: number;
+  };
   overallScore: number;
   feedback: string;
 }
@@ -169,7 +199,7 @@ export type ImageRatio = '1:1' | '16:9' | '9:16';
 
 export interface AppState {
   selectedCharacter: CharacterProfile;
-  selectedMode: string;
+  selectedMode: AppMode;
   selectedRatio: ImageRatio;
   customPrompt: string;
   originalImages: string[];
@@ -179,4 +209,34 @@ export interface AppState {
   isLoading: boolean;
   loadingStep: LoadingStep;
   error: string | null;
+}
+
+// ─── Learning History ───────────────────────────────────────
+export interface LessonRecord {
+  id: string;
+  date: string;           // ISO string
+  topic: string;
+  score: number;           // 0-10
+  totalCorrect: number;
+  totalQuestions: number;
+  skillScores: {
+    mc: number;
+    scramble: number;
+    fill: number;
+    vocab: number;
+    tf: number;
+    listen: number;
+  };
+  studentName: string;
+}
+
+export interface WeeklyReport {
+  weekLabel: string;       // e.g. "10/02 - 16/02"
+  weekStart: string;       // ISO
+  weekEnd: string;         // ISO
+  lessonCount: number;
+  averageScore: number;
+  topics: string[];
+  progress: 'up' | 'down' | 'same' | 'none'; // compared to previous week
+  prevAverage: number | null;
 }

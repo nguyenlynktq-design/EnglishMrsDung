@@ -1,7 +1,9 @@
 
 import React, { useState } from 'react';
 import { ReadingAdventure, MultipleChoiceQ } from '../types';
+import { playGeminiTTS } from '../services/geminiService';
 
+// Add missing interface definition for ReadingSection props
 interface ReadingSectionProps {
   reading: ReadingAdventure;
 }
@@ -18,11 +20,7 @@ export const ReadingSection: React.FC<ReadingSectionProps> = ({ reading }) => {
   };
 
   const playPassage = () => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(reading.passage);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.85;
-    window.speechSynthesis.speak(utterance);
+    playGeminiTTS(reading.passage);
   };
 
   if (!reading) return null;
