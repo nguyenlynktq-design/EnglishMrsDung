@@ -280,7 +280,7 @@ function App() {
                 <div className="absolute top-0 left-0 w-full h-3 bg-brand-500"></div>
                 <MrsDungLogo className="w-20 h-20 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-8 drop-shadow-xl" color="#15803d" />
                 <h2 className="text-lg sm:text-2xl md:text-4xl font-black text-brand-800 mb-2 uppercase tracking-tighter font-display">Let's learn English with Mrs. Dung</h2>
-                <p className="text-xs sm:text-sm font-black text-slate-400 mb-4 sm:mb-8 uppercase italic opacity-60">"English with Heart. Success with Mrs.Dung"</p>
+                <p className="text-xs sm:text-sm font-black text-slate-400 mb-4 sm:mb-8 uppercase italic opacity-60">"English with Heart. Success with Mrs. Dung"</p>
 
                 <div className="space-y-8 text-left">
                   <div className="flex bg-slate-100 p-2 rounded-2xl gap-2 shadow-inner">
@@ -407,6 +407,7 @@ function App() {
                     topic={lesson.topic}
                     score={totalScore}
                     totalCorrect={totalCorrectCount}
+                    totalQuestions={totalQuestions}
                     evaluation={evaluation}
                     onClose={() => setShowCertificate(false)}
                   />
@@ -428,7 +429,7 @@ function App() {
           <div className="grid md:grid-cols-3 gap-12 items-start mb-16">
             <div className="space-y-6 flex flex-col items-center md:items-start text-center md:text-left">
               <div className="bg-white p-4 rounded-[2rem] w-fit shadow-xl border-4 border-highlight-400"><MrsDungLogo className="w-20 h-20" color="#166534" /></div>
-              <div><h3 className="font-black text-2xl text-highlight-400 uppercase leading-none font-display">ENGLISH MRS. DUNG</h3><p className="text-brand-100 font-black text-base mt-2 opacity-90 italic">“English with Heart. Success with Mrs.Dung”</p></div>
+              <div><h3 className="font-black text-2xl text-highlight-400 uppercase leading-none font-display">ENGLISH MRS. DUNG</h3><p className="text-brand-100 font-black text-base mt-2 opacity-90 italic">“English with Heart. Success with Mrs. Dung”</p></div>
             </div>
             <div className="space-y-6 text-center md:text-left">
               <h4 className="font-black text-highlight-400 text-xl uppercase tracking-[0.2em] border-b-2 border-white/10 pb-2 font-sans">Liên Hệ</h4>
@@ -441,7 +442,7 @@ function App() {
             </div>
             <div className="space-y-6 text-center md:text-left">
               <h4 className="font-black text-highlight-400 text-xl uppercase tracking-[0.2em] border-b-2 border-white/10 pb-2 font-sans">Slogan</h4>
-              <div className="bg-white/5 p-8 rounded-[2rem] border-2 border-white/10 shadow-xl backdrop-blur-sm"><p className="text-xl font-black italic text-white mb-3 leading-tight">“English with Heart. Success with Mrs.Dung”</p><p className="text-brand-300 font-black text-base uppercase tracking-widest font-sans">Học Tiếng Anh bằng cả Trái Tim.</p></div>
+              <div className="bg-white/5 p-8 rounded-[2rem] border-2 border-white/10 shadow-xl backdrop-blur-sm"><p className="text-xl font-black italic text-white mb-3 leading-tight">“English with Heart. Success with Mrs. Dung”</p><p className="text-brand-300 font-black text-base uppercase tracking-widest font-sans">Học Tiếng Anh bằng cả Trái Tim.</p></div>
             </div>
           </div>
         </div>

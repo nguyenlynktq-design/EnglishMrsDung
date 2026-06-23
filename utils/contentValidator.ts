@@ -240,35 +240,11 @@ export const convertLegacyScramble = (legacy: {
     };
 };
 
-// Parse sentence into tokens (words and punctuation)
+// Parse sentence into tokens (split by whitespace, keeping punctuation attached to words)
+// This ensures "He promised to call me back." → ["He", "promised", "to", "call", "me", "back."]
+// NOT → ["He", "promised", "to", "call", "me", "back", "."]
 export const parseIntoTokens = (sentence: string): string[] => {
-    const tokens: string[] = [];
-    let current = '';
-
-    for (let i = 0; i < sentence.length; i++) {
-        const char = sentence[i];
-
-        if (/[\s]/.test(char)) {
-            if (current) {
-                tokens.push(current);
-                current = '';
-            }
-        } else if (/[.,!?;:]/.test(char)) {
-            if (current) {
-                tokens.push(current);
-                current = '';
-            }
-            tokens.push(char);
-        } else {
-            current += char;
-        }
-    }
-
-    if (current) {
-        tokens.push(current);
-    }
-
-    return tokens;
+    return sentence.trim().split(/\s+/).filter(t => t.length > 0);
 };
 
 // Convert legacy fill-blank question to new format

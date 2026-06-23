@@ -309,9 +309,40 @@ export const generateLessonPlan = async (
   const imageParts = images.map(data => ({ inlineData: { data, mimeType: 'image/jpeg' } }));
 
   // ==================== PHASE 1: GENERATE CORE LESSON ====================
-  const promptCore = `MRS. DUNG AI - EXPERT PEDAGOGY MODE (CHUYÊN GIA TIẾNG ANH).
-  TASK: Analyze the provided content (text/images) and create a comprehensive core lesson.
+  const promptCore = `MRS. DUNG AI - EXPERT PEDAGOGY MODE.
+  TASK: Create a comprehensive core lesson. BE CONCISE. Output valid JSON only, no extra text.
   
+  ===== REFERENCE FRAMEWORK: GLOBAL SUCCESS (SGK TIẾNG ANH VIỆT NAM) =====
+  All content MUST be aligned with the Global Success textbook series (NXB Giáo dục Việt Nam).
+  CEFR level alignment — AUTO-DETECT grade level from input content:
+  - Lớp 1-3 (STARTER / Pre-A1): CỰC KỲ ĐƠN GIẢN!
+    * Chỉ dùng câu 2-5 từ: "I have a cat.", "This is a pen.", "She is happy."
+    * Chủ đề: gia đình, trường học, đồ vật, con vật, màu sắc, số đếm
+    * CHỈ dùng: Present Simple (is/am/are, have/has), can, like
+    * KHÔNG dùng: Past tense, Future tense, mệnh đề phụ, câu phức
+    * Từ vựng: chỉ những từ cơ bản nhất, 1-2 âm tiết
+  - Lớp 4-5: Pre-A1 to A1 (câu đơn giản, 3-7 từ/câu, bắt đầu dùng Present Continuous)
+  - Lớp 6-7: A1 (câu đơn giản, chủ đề gần gũi: sở thích, thể thao, thời tiết)
+  - Lớp 8-9: A1-A2 (câu phức vừa phải, chủ đề: du lịch, môi trường, công nghệ)
+  - Lớp 10-11: A2-B1 (có thể dùng mệnh đề phụ, chủ đề: nghề nghiệp, sức khỏe, xã hội)
+  - Lớp 12: B1 (phức tạp hơn, chủ đề: giáo dục, toàn cầu hóa)
+  → Tự động xác định cấp độ lớp dựa trên nội dung input và tạo bài phù hợp.
+
+  ===== MANDATORY ENGLISH QUALITY RULES (ZERO TOLERANCE) =====
+  1. ZERO spelling errors in English. Every single word MUST be spelled correctly.
+  2. Every sentence MUST follow standard English grammar rules perfectly.
+  3. Use British English spelling as PRIMARY (as used in Global Success textbooks):
+     - "favourite" NOT "favorite", "colour" NOT "color"
+     - "centre" NOT "center", "programme" NOT "program"
+     - "travelling" NOT "traveling", "organised" NOT "organized"
+  4. All proper nouns MUST be capitalized correctly.
+  5. Vietnamese translations MUST use correct diacritics (dấu tiếng Việt đầy đủ).
+  6. Contractions: Use consistently — "don't", "doesn't", "isn't", "aren't", "can't".
+  7. Articles: Ensure 100% correct use of a/an/the in ALL sentences.
+  8. Subject-verb agreement: MUST be perfect (He goes, NOT He go; She has, NOT She have).
+  9. Tense consistency: All examples within a section must use consistent tense.
+  10. Punctuation: Correct use of periods, commas, question marks, exclamation marks.
+
   ===== CRITICAL: 100% CONTENT EXTRACTION =====
   ⚠️ QUAN TRỌNG NHẤT: Phải trích xuất CHÍNH XÁC và ĐẦY ĐỦ 100% nội dung từ nguồn!
   - Nếu ảnh/văn bản có 10 từ vựng → tạo ĐÚNG 10 từ vựng, KHÔNG được bỏ sót
@@ -322,30 +353,46 @@ export const generateLessonPlan = async (
   
   CRITICAL LANGUAGE REQUIREMENTS:
   - GRAMMAR section:
-    * "topic": Keep in English (the grammar rule name)
-    * "explanation": MUST be in VIETNAMESE (giải thích bằng tiếng Việt, dễ hiểu cho học sinh)
-    * "examples": Each example MUST include Vietnamese translation in format: "English sentence" → "bản dịch tiếng việt viết thường"
+    * "topic": Keep in English (the grammar rule name, e.g., "Present Simple Tense", "Comparative Adjectives")
+    * "explanation": MUST be in VIETNAMESE (giải thích bằng tiếng Việt, dễ hiểu cho học sinh, có dấu tiếng Việt đầy đủ)
+      - For Lớp 1-3: Giải thích CỰC KỲ đơn giản, dùng từ ngữ trẻ em hiểu được.
+    * "examples": Each example MUST include Vietnamese translation in format: "English sentence." → "bản dịch tiếng việt viết thường."
+    * Grammar rules MUST match those taught in Global Success textbooks for the detected grade level.
   
   - VOCABULARY section (EXTRACT ALL FROM SOURCE):
     * Extract EVERY SINGLE vocabulary word from the source - DO NOT SKIP ANY
     * "word": English word (EXACTLY as shown in source)
-    * "ipa": IPA pronunciation (EXACTLY as shown in source if available)
-    * "meaning": Vietnamese meaning (EXACTLY as shown in source, lowercase)
-    * "example": English example sentence (EXACTLY as shown in source)
-    * "sentenceMeaning": Vietnamese translation of example (EXACTLY as shown in source, lowercase)
-    * "type": Word type (e.g. noun, verb, adjective, adverb)
+    * "ipa": IPA pronunciation — MUST be accurate International Phonetic Alphabet.
+      Double-check IPA transcription for common errors:
+      - "school" = /skuːl/ NOT /ʃuːl/
+      - "thought" = /θɔːt/ NOT /tɔːt/
+      - "important" = /ɪmˈpɔːtənt/ NOT /ɪmˈpɔːtænt/
+    * "meaning": Vietnamese meaning (EXACTLY as shown in source, lowercase, có dấu tiếng Việt đầy đủ)
+    * "example": English example sentence (EXACTLY as shown in source). Must be grammatically perfect.
+    * "sentenceMeaning": Vietnamese translation of example (EXACTLY as shown in source, lowercase, có dấu tiếng Việt đầy đủ)
+    * "type": Word type — use standard abbreviations: "noun" (n), "verb" (v), "adjective" (adj), "adverb" (adv), "preposition" (prep), "conjunction" (conj)
     * "emoji": A cute relevant emoji representing the word.
   
   - READING ADVENTURE (reading):
     * "title": English title of the passage.
-    * "passage": An English passage (100-150 words) appropriate to the vocabulary level, using at least 5 vocabulary words from the list.
-    * "translation": Complete Vietnamese translation of the passage.
+    * "passage": MUST adapt length to detected grade level:
+      - Lớp 1-3 (Starter): ONLY 3-5 very simple sentences (20-40 words total). Example:
+        "My name is Lan. I am seven. I have a cat. My cat is white. I love my cat."
+      - Lớp 4-5: 5-7 simple sentences (40-70 words)
+      - Lớp 6-9: 8-12 sentences (80-120 words)
+      - Lớp 10-12: Full passage (100-150 words)
+      Use at least 3-5 vocabulary words from the list. MUST be 100% grammatically correct with ZERO spelling errors.
+    * "translation": Complete Vietnamese translation of the passage (có dấu tiếng Việt đầy đủ, chính xác).
     * "comprehension": Create EXACTLY 5 Multiple Choice comprehension questions based on the passage.
-      - Each question: "id" (e.g., comp_1 to comp_5), "question", "options" (4 options), "correctAnswer" (0-3), "explanation" (in Vietnamese).
+      - For Lớp 1-3: Questions MUST be very simple (e.g., "What colour is the cat?", "How old is Lan?")
+      - Each question: "id" (e.g., comp_1 to comp_5), "question", "options" (4 options), "correctAnswer" (0-3), "explanation" (in Vietnamese, có dấu tiếng Việt đầy đủ).
+      - Questions and all 4 options MUST be grammatically correct English.
+      - The correctAnswer index MUST match the actually correct option. DOUBLE-CHECK this.
   
   - TEACHER TIPS (teacherTips):
-    * A helpful tip in Vietnamese for teachers/parents to support the student's learning of this lesson.
+    * A helpful tip in Vietnamese for teachers/parents to support the student's learning of this lesson (có dấu tiếng Việt đầy đủ).
   `;
+
 
   const coreInputParts: any[] = [];
   if (textInput) coreInputParts.push({ text: `SOURCE TEXT:\n${textInput}` });
@@ -369,7 +416,8 @@ export const generateLessonPlan = async (
   if (onProgress) onProgress('practice');
 
   const promptPractice = `MRS. DUNG AI - EXPERT EXERCISE GENERATOR.
-  TASK: Based on the provided Lesson Core (Vocabulary & Grammar), create a high-quality practice test.
+  TASK: Create practice exercises. BE CONCISE. Output valid JSON only.
+  DETECTED GRADE LEVEL: Auto-detect from vocabulary complexity below.
   
   ===== ⚠️⚠️⚠️ CRITICAL WARNING: ZERO TOLERANCE FOR GRADING ERRORS ⚠️⚠️⚠️ =====
   🚨 BẠN ĐANG TẠO BÀI KIỂM TRA CHO HỌC SINH THẬT! 🚨
@@ -377,6 +425,17 @@ export const generateLessonPlan = async (
   - Mỗi câu hỏi PHẢI được kiểm tra 2 LẦN trước khi output
   - KHÔNG ĐƯỢC phép ra đề 1 kiểu, đáp án 1 kiểu khác!
   
+  ===== MANDATORY ENGLISH QUALITY RULES (ZERO TOLERANCE) =====
+  1. ZERO spelling errors. Every English word MUST be spelled correctly.
+  2. Every sentence MUST follow standard English grammar perfectly.
+  3. Use British English spelling (as in Global Success textbooks):
+     - "favourite" NOT "favorite", "colour" NOT "color", "centre" NOT "center"
+  4. Subject-verb agreement MUST be perfect in every sentence.
+  5. Articles (a/an/the) MUST be used correctly in every sentence.
+  6. Tense usage MUST be consistent and correct.
+  7. Vietnamese text MUST use correct diacritics (dấu tiếng Việt đầy đủ, chính xác).
+  8. All sentences MUST start with a capital letter and end with proper punctuation.
+
   ===== ⚠️ CRITICAL: 80% CONTENT MUST USE INPUT VOCABULARY/GRAMMAR =====
   MANDATORY RULE: At least 80% of ALL exercises (32/40 questions) MUST directly use the vocabulary, 
   grammar patterns, and concepts from the LESSON CORE provided.
@@ -391,41 +450,79 @@ export const generateLessonPlan = async (
   ===== EXERCISE TYPES TO GENERATE =====
   1. Create EXACTLY 10 Multiple Choice Questions (multipleChoice)
      - A sentence with ONE blank using "____"
-     - 4 options [A, B, C, D] - only ONE grammatically correct
+     - 4 options [A, B, C, D] — only ONE is grammatically correct
      - correctAnswer: Index of correct option (0-3)
-     - explanation: Vietnamese explanation with grammar rule reference.
+     - explanation: Vietnamese explanation with grammar rule reference (có dấu tiếng Việt đầy đủ).
+     - All 4 options MUST be real English words, correctly spelled.
+     - The question sentence itself MUST be grammatically correct (except for the blank).
+     - For Lớp 1-3: Sentences MUST be 3-5 words only (e.g., "I ____ a cat." options: have/has/is/am)
      
   2. Create EXACTLY 10 Scramble Questions (scramble)
-     - scrambled: Array of words from correctSentence, shuffled (MUST contain EXACT same words, no extra/missing)
-     - correctSentence: Grammatically correct sentence.
-     - translation: Vietnamese translation.
+     ⚠️⚠️⚠️ CRITICAL RULES FOR SCRAMBLE — READ CAREFULLY! ⚠️⚠️⚠️
+     - correctSentence: A grammatically correct English sentence with proper punctuation.
+       * For Lớp 1-3: ONLY 3-5 words per sentence (e.g., "I like dogs.", "She is happy.")
+     - scrambled: Array of WHOLE WORDS from correctSentence, shuffled into random order.
+     
+     🔴 PUNCTUATION RULES (MOST IMPORTANT):
+     * Punctuation marks (. , ? !) MUST STAY ATTACHED to the word they follow.
+     * NEVER separate punctuation into its own array element.
+     * Example: correctSentence = "He promised to call me back."
+       ✅ CORRECT scrambled: ["back.", "to", "He", "call", "promised", "me"]
+       ❌ WRONG scrambled: ["back", ".", "to", "He", "call", "promise", "d", "me"]
+       ❌ WRONG scrambled: ["back", ".", "to", "He", "call", "promised", "me"]
+     * Example: correctSentence = "What is your name?"
+       ✅ CORRECT scrambled: ["your", "is", "name?", "What"]
+       ❌ WRONG scrambled: ["your", "is", "name", "?", "What"]
+     
+     🔴 WORD INTEGRITY RULES:
+     * NEVER split a word into parts (e.g., "promised" must NOT become "promise" + "d")
+     * The number of elements in scrambled array MUST EQUAL the number of space-separated words in correctSentence.
+     * Each element in scrambled MUST be a complete word (possibly with punctuation attached at the end).
+     * Contractions count as ONE word: "don't" = 1 element, "isn't" = 1 element.
+     
+     - translation: Vietnamese translation (có dấu tiếng Việt đầy đủ).
   
   3. Create EXACTLY 10 Fill-in-the-blank Questions (fillBlank)
      - ONLY 1 WORD ANSWER, ONLY 1 BLANK "____"
-     - alternativeAnswers: Array of valid alternative answers (if any)
+     - The sentence with the blank MUST be grammatically correct when the answer is filled in.
+     - correctAnswer: The correct word to fill in (must be correctly spelled).
+     - alternativeAnswers: Array of valid alternative answers (if any).
      - clueEmoji: A helpful clue emoji.
-     - explanation: Vietnamese explanation.
+     - explanation: Vietnamese explanation (có dấu tiếng Việt đầy đủ).
+     - For Lớp 1-3: Sentences MUST be 3-5 words (e.g., "This is a ____." answer: "pen")
   
   4. Create EXACTLY 10 Vocabulary Translation Questions (vocabTranslation)
      - Give an English word from vocabulary, select 1 of 4 Vietnamese meanings.
-     - Options: 4 choices, correctAnswer (0-3).
+     - Options: 4 Vietnamese choices (có dấu tiếng Việt đầy đủ), correctAnswer (0-3).
+     - All 4 Vietnamese options MUST be correctly spelled with proper diacritics.
+     - The 3 wrong options MUST be plausible but clearly different from the correct meaning.
   
   5. Create EXACTLY 5 True/False Reading Comprehension Questions (trueFalse + trueFalsePassage)
-     - trueFalsePassage: A new reading passage (150-200 words) using at least 5 words from vocabulary.
+     - trueFalsePassage: A reading passage using at least 5 words from vocabulary. MUST be 100% grammatically correct with ZERO spelling errors.
+       * Lớp 1-3 (Starter): ONLY 3-5 very simple sentences (20-40 words). Use only Present Simple.
+       * Lớp 4-5: 5-8 sentences (40-80 words)
+       * Lớp 6+: Full passage (100-200 words)
      - trueFalse: 5 True/False statements based on this passage. (isTrue: boolean)
+     - For Lớp 1-3: Statements MUST be very short and simple (e.g., "Lan has a dog." True/False)
+     - Each statement MUST be grammatically correct English.
+     - explanation: Vietnamese explanation (có dấu tiếng Việt đầy đủ).
   
   6. Create EXACTLY 5 Listening Comprehension Questions (listening)
-     - audioText: A short English sentence (5-12 words) using lesson vocabulary.
+     - audioText: A short English sentence using lesson vocabulary. MUST be grammatically perfect.
+       * For Lớp 1-3: ONLY 3-5 words (e.g., "I have a dog.", "She is my sister.")
+       * For Lớp 4+: 5-12 words
      - options: 4 choices (correct answer is audioText, 3 wrong choices are similar but have 1-2 words changed).
+     - All 4 options MUST be grammatically correct English sentences.
      - correctAnswer: Index of correct option (0-3).
-     - explanation: Vietnamese translation of audioText.
+     - explanation: Vietnamese translation of audioText (có dấu tiếng Việt đầy đủ).
   
   7. Create EXACTLY 10 Matching Pairs (matching)
-     - left: English word/phrase from vocabulary.
-     - right: Vietnamese meaning.
+     - left: English word/phrase from vocabulary (correctly spelled).
+     - right: Vietnamese meaning (có dấu tiếng Việt đầy đủ).
   
   LESSON CORE DATA:
   ${JSON.stringify({ vocabulary: coreResult.vocabulary, grammar: coreResult.grammar })}`;
+
 
   const practiceResult = await callWithFallback(async (modelId: string) => {
     console.log(`🤖 [Giai đoạn 2] Đang thử với model: ${modelId}`);

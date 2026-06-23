@@ -65,29 +65,10 @@ export const shuffleWithRecheck = <T>(array: T[], seed: number, maxAttempts = 10
 export const PUNCTUATION_NO_SPACE_BEFORE = ['.', ',', '?', '!', ':', ';', "'", '"', ')'];
 export const PUNCTUATION_NO_SPACE_AFTER = ['(', '"', "'"];
 
-// Join tokens with proper spacing rules
+// Join tokens with spaces (punctuation is already attached to words)
 export const joinTokensWithSpacing = (tokens: string[]): string => {
     if (tokens.length === 0) return '';
-
-    let result = tokens[0];
-
-    for (let i = 1; i < tokens.length; i++) {
-        const currentToken = tokens[i];
-        const prevToken = tokens[i - 1];
-
-        // Check if we should add space before this token
-        const noSpaceBefore = PUNCTUATION_NO_SPACE_BEFORE.includes(currentToken) ||
-            currentToken.startsWith("'");
-        const noSpaceAfter = PUNCTUATION_NO_SPACE_AFTER.includes(prevToken);
-
-        if (noSpaceBefore || noSpaceAfter) {
-            result += currentToken;
-        } else {
-            result += ' ' + currentToken;
-        }
-    }
-
-    return result;
+    return tokens.join(' ');
 };
 
 // Normalize text for comparison (handles case and spacing)
@@ -137,33 +118,9 @@ export const compareTokenArrays = (
     };
 };
 
-// Parse sentence into tokens (words and punctuation)
+// Parse sentence into tokens (split by whitespace, keeping punctuation attached to words)
+// This ensures "He promised to call me back." → ["He", "promised", "to", "call", "me", "back."]
+// NOT → ["He", "promised", "to", "call", "me", "back", "."]
 export const parseIntoTokens = (sentence: string): string[] => {
-    const tokens: string[] = [];
-    let current = '';
-
-    for (let i = 0; i < sentence.length; i++) {
-        const char = sentence[i];
-
-        if (/[\s]/.test(char)) {
-            if (current) {
-                tokens.push(current);
-                current = '';
-            }
-        } else if (/[.,!?;:]/.test(char)) {
-            if (current) {
-                tokens.push(current);
-                current = '';
-            }
-            tokens.push(char);
-        } else {
-            current += char;
-        }
-    }
-
-    if (current) {
-        tokens.push(current);
-    }
-
-    return tokens;
+    return sentence.trim().split(/\s+/).filter(t => t.length > 0);
 };
