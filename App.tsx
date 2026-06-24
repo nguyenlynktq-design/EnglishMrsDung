@@ -137,6 +137,9 @@ function App() {
         setError("LỖI 429: Hết hạn mức sử dụng (Quota Exhausted). Cô hãy đổi API Key khác nhé!");
       } else if (rawError.includes("401") || rawError.includes("API_KEY_INVALID")) {
         setError("LỖI 401: Mã API Key không hợp lệ. Cô hãy kiểm tra lại nhé!");
+      } else if (rawError.startsWith("ALL_MODELS_FAILED|")) {
+        const details = rawError.split('|')[1];
+        setError(`Không thể kết nối đến AI. Vui lòng kiểm tra:\n• Kết nối mạng internet\n• API Key còn hiệu lực\n• Thử lại sau vài giây\n\nChi tiết: All models failed. Details: ${details}`);
       } else {
         setError(`LỖI HỆ THỐNG: ${rawError}`);
       }
@@ -300,7 +303,20 @@ function App() {
                         : '⏳ ĐANG TẠO BÀI TẬP MEGATEST...'
                     ) : '🚀 BẮT ĐẦU NGAY!'}
                   </button>
-                  {error && <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-600 font-black text-lg text-center animate-bounce shadow-md">⚠️ {error}</div>}
+                  {error && (
+                    <div className="p-4 sm:p-6 bg-red-50 border-2 border-red-200 rounded-xl text-red-600 shadow-md">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl sm:text-2xl mt-0.5">❗</span>
+                        <div className="font-bold text-sm sm:text-base whitespace-pre-line text-left leading-relaxed break-words overflow-hidden">
+                          {error}
+                        </div>
+                      </div>
+                      <div className="mt-4 flex gap-3 justify-center sm:justify-start sm:ml-10">
+                        <button onClick={() => setShowSettings(true)} className="px-4 py-2 bg-red-100 text-red-800 rounded-lg font-bold hover:bg-red-200 text-sm flex items-center gap-2">🔑 Đổi API Key</button>
+                        <button onClick={handleGenerate} disabled={loading} className="px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg font-bold hover:bg-emerald-200 text-sm flex items-center gap-2">🔄 Thử lại</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

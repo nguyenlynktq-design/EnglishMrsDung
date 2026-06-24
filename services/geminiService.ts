@@ -12,8 +12,11 @@ const MODEL_STORAGE = 'mrs_dung_selected_model';
 // Fallback: gemini-3-flash-preview → gemini-3-pro-preview → gemini-2.5-flash
 export const AVAILABLE_MODELS = [
   { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', isDefault: true },
+  { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash' },
   { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro' },
   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Ổn định)' },
 ];
 
 export const getApiKey = (): string | null => {
@@ -55,26 +58,34 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Retry with model fallback
 export const callWithFallback = async <T>(
   fn: (model: string) => Promise<T>,
   startModelIndex: number = 0
 ): Promise<T> => {
   const models = AVAILABLE_MODELS.slice(startModelIndex);
-  let lastError: Error | null = null;
+  let errorDetails: string[] = [];
 
-  for (const model of models) {
+  for (let i = 0; i < models.length; i++) {
+    const model = models[i];
     try {
       return await fn(model.id);
     } catch (error: any) {
-      lastError = error;
-      console.warn(`Model ${model.id} failed, trying next...`, error.message);
-      // Continue to next model
+      const errorMsg = error.message || JSON.stringify(error);
+      errorDetails.push(`[${model.id}]: ${errorMsg}`);
+      console.warn(`Model ${model.id} failed, trying next...`, errorMsg);
+      
+      // Delay before trying the next model to reduce 429/503 errors
+      if (i < models.length - 1) {
+        await delay(1500);
+      }
     }
   }
 
   // All models failed
-  throw lastError || new Error('Tất cả các model đều thất bại');
+  throw new Error(`ALL_MODELS_FAILED|${errorDetails.join(' || ')}`);
 };
 
 export const fileToBase64 = (file: File): Promise<string> => {
