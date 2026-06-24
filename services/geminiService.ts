@@ -431,10 +431,12 @@ export const generateLessonPlan = async (
   DETECTED GRADE LEVEL: Auto-detect from vocabulary complexity below.
   
   ===== ⚠️⚠️⚠️ CRITICAL WARNING: ZERO TOLERANCE FOR GRADING ERRORS ⚠️⚠️⚠️ =====
-  🚨 BẠN ĐANG TẠO BÀI KIỂM TRA CHO HỌC SINH THẬT! 🚨
-  - Nếu đáp án SAI → Học sinh bị chấm SAI → Học sinh mất niềm tin → THẤT BẠI!
-  - Mỗi câu hỏi PHẢI được kiểm tra 2 LẦN trước khi output
-  - KHÔNG ĐƯỢC phép ra đề 1 kiểu, đáp án 1 kiểu khác!
+  🚨 BẠN ĐANG TẠO BÀI KIỂM TRA CHO HỌC SINH THẬT! CHẤM ĐIỂM PHẢI THẬT CHUẨN XÁC! 🚨
+  - LỖI SAI ĐÁP ÁN LÀ KHÔNG THỂ CHẤP NHẬN: Nếu đáp án SAI → Học sinh bị chấm SAI → Học sinh mất niềm tin!
+  - Mỗi câu hỏi PHẢI được KIỂM TRA CHÉO 2 LẦN trước khi tạo JSON.
+  - Vị trí correctAnswer (index 0-3) PHẢI KHỚP CHÍNH XÁC 100% với đáp án đúng trong mảng options.
+  - Từ điền vào chỗ trống (correctAnswer) PHẢI là đáp án duy nhất đúng và hợp ngữ cảnh.
+  - Lời giải thích (explanation) phải khớp logic với đáp án đúng đã chọn.
   
   ===== MANDATORY ENGLISH QUALITY RULES (ZERO TOLERANCE) =====
   1. ZERO spelling errors. Every English word MUST be spelled correctly.
